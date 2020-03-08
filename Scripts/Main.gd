@@ -6,6 +6,7 @@ var file_menu : PopupMenu
 var view_menu : PopupMenu
 var tools := []
 var redone := false
+var is_quitting_on_save := false
 var previous_left_color := Color.black
 var previous_right_color := Color.white
 
@@ -160,7 +161,7 @@ func _ready() -> void:
 			else:
 				$ImportSprites._on_ImportSprites_files_selected([arg])
 
-	OS.set_window_title("(" + tr("untitled") + ") - Pixelorama")
+	Global.window_title = "(" + tr("untitled") + ") - Pixelorama"
 
 	Global.canvas.layers[0][2] = tr("Layer") + " 0"
 	Global.canvas.generate_layer_panels()
@@ -169,15 +170,18 @@ func _ready() -> void:
 
 	$MenuAndUI/UI/ToolPanel/Tools/ColorAndToolOptions/ColorButtonsVertical/ColorPickersCenter/ColorPickersHorizontal/LeftColorPickerButton.get_picker().presets_visible = false
 	$MenuAndUI/UI/ToolPanel/Tools/ColorAndToolOptions/ColorButtonsVertical/ColorPickersCenter/ColorPickersHorizontal/RightColorPickerButton.get_picker().presets_visible = false
+	$QuitAndSaveDialog.add_button("Save & Exit", false, "Save")
+	$QuitAndSaveDialog.get_ok().text = "Exit without saving"
+
 
 	if not Global.config_cache.has_section_key("preferences", "startup"):
 		Global.config_cache.set_value("preferences", "startup", true)
-	if not Global.config_cache.get_value("preferences", "startup"):
-		$SplashDialog.hide()
-
-	# Wait for the window to adjust itself, so the popup is correctly centered
-	yield(get_tree().create_timer(0.01), "timeout")
-	$SplashDialog.popup_centered() # Splash screen
+	if Global.config_cache.get_value("preferences", "startup"):
+		# Wait for the window to adjust itself, so the popup is correctly centered
+		yield(get_tree().create_timer(0.01), "timeout")
+		$SplashDialog.popup_centered() # Splash screen
+	else:
+		Global.can_draw = true
 
 func _input(event : InputEvent) -> void:
 	Global.left_cursor.position = get_global_mouse_position() + Vector2(-32, 32)
@@ -201,8 +205,7 @@ func _input(event : InputEvent) -> void:
 
 func _notification(what : int) -> void:
 	if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST: # Handle exit
-		$QuitDialog.call_deferred("popup_centered")
-		Global.can_draw = false
+		show_quit_dialog()
 
 func file_menu_id_pressed(id : int) -> void:
 	match id:
@@ -214,12 +217,14 @@ func file_menu_id_pressed(id : int) -> void:
 			Global.can_draw = false
 			opensprite_file_selected = false
 		2: # Save
+			is_quitting_on_save = false
 			if current_save_path == "":
 				$SaveSprite.popup_centered()
 				Global.can_draw = false
 			else:
 				_on_SaveSprite_file_selected(current_save_path)
 		3: # Save as
+			is_quitting_on_save = false
 			$SaveSprite.popup_centered()
 			Global.can_draw = false
 		4: # Import
@@ -236,8 +241,7 @@ func file_menu_id_pressed(id : int) -> void:
 			$ExportSprites.popup_centered()
 			Global.can_draw = false
 		7: # Quit
-			$QuitDialog.popup_centered()
-			Global.can_draw = false
+			show_quit_dialog()
 
 func edit_menu_id_pressed(id : int) -> void:
 	match id:
@@ -479,7 +483,7 @@ func _on_OpenSprite_file_selected(path : String) -> void:
 	file_menu.set_item_text(2, tr("Save") + " %s" % path.get_file())
 	file_menu.set_item_text(5, tr("Export") + " %s" % $ExportSprites.current_path.get_file())
 
-	OS.set_window_title(path.get_file() + " - Pixelorama")
+	Global.window_title = path.get_file() + " - Pixelorama"
 
 
 func _on_SaveSprite_file_selected(path : String) -> void:
@@ -538,7 +542,13 @@ func _on_SaveSprite_file_selected(path : String) -> void:
 			file.store_buffer(brush.get_data())
 		file.store_line("END_BRUSHES")
 	file.close()
+	if !Global.saved:
+		Global.saved = true
+		Global.window_title = Global.window_title.rstrip("(*)")
+
 	Global.notification_label("File saved")
+	if is_quitting_on_save:
+		_on_QuitDialog_confirmed()
 
 func clear_canvases() -> void:
 	for child in Global.vbox_layer_container.get_children():
@@ -554,7 +564,7 @@ func clear_canvases() -> void:
 	$ExportSprites.current_export_path = ""
 	file_menu.set_item_text(2, "Save")
 	file_menu.set_item_text(5, "Export PNG...")
-	OS.set_window_title("(" + tr("untitled") + ") - Pixelorama")
+	Global.window_title = "(" + tr("untitled") + ") - Pixelorama"
 	Global.undo_redo.clear_history(false)
 
 func _on_ImportSprites_popup_hide() -> void:
@@ -848,10 +858,24 @@ func _on_OpacitySlider_value_changed(value) -> void:
 	Global.layer_opacity_spinbox.value = value
 	Global.canvas.update()
 
+func show_quit_dialog() -> void:
+	if !$QuitDialog.visible:
+		if Global.saved:
+			$QuitDialog.call_deferred("popup_centered")
+		else:
+			$QuitAndSaveDialog.call_deferred("popup_centered")
+	Global.can_draw = false
+
+func _on_QuitAndSaveDialog_custom_action(action : String) -> void:
+	if action == "Save":
+		is_quitting_on_save = true
+		$SaveSprite.popup_centered()
+		$QuitDialog.hide()
+		Global.can_draw = false
+
 func _on_QuitDialog_confirmed() -> void:
 	# Darken the UI to denote that the application is currently exiting
 	# (it won't respond to user input in this state).
 	modulate = Color(0.5, 0.5, 0.5)
 
 	get_tree().quit()
-

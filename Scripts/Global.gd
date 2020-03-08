@@ -4,11 +4,13 @@ enum Pressure_Sensitivity {NONE, ALPHA, SIZE, ALPHA_AND_SIZE}
 enum Brush_Types {PIXEL, CIRCLE, FILLED_CIRCLE, FILE, RANDOM_FILE, CUSTOM}
 
 var root_directory := "."
+var window_title := "" setget title_changed # Why doesn't Godot have get_window_title()?
 var config_cache := ConfigFile.new()
 # warning-ignore:unused_class_variable
 var loaded_locales : Array
 var undo_redo : UndoRedo
-var undos := 0 #The number of times we added undo properties
+var undos := 0 # The number of times we added undo properties
+var saved := true # Checks if the user has saved
 
 # Canvas related stuff
 var current_frame := 0 setget frame_changed
@@ -384,6 +386,7 @@ func notification_label(text : String) -> void:
 	var notification : Label = load("res://Prefabs/NotificationLabel.tscn").instance()
 	notification.text = tr(text)
 	notification.rect_position = Vector2(240, OS.window_size.y - 150)
+	notification.theme = control.theme
 	get_tree().get_root().add_child(notification)
 
 func undo(_canvases : Array, layer_index : int = -1) -> void:
@@ -425,6 +428,9 @@ func undo(_canvases : Array, layer_index : int = -1) -> void:
 		canvas_parent.move_child(_canvases[0], _canvases[0].frame)
 
 	canvas.update()
+	if saved:
+		saved = false
+		self.window_title = window_title + "(*)"
 	notification_label("Undo: %s" % action_name)
 
 
@@ -465,8 +471,15 @@ func redo(_canvases : Array, layer_index : int = -1) -> void:
 		canvas_parent.move_child(_canvases[0], _canvases[0].frame)
 
 	canvas.update()
+	if saved:
+		saved = false
+		self.window_title = window_title + "(*)"
 	if control.redone:
 		notification_label("Redo: %s" % action_name)
+
+func title_changed(value : String) -> void:
+	window_title = value
+	OS.set_window_title(value)
 
 func frame_changed(value : int) -> void:
 	current_frame = value

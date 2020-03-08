@@ -1457,7 +1457,14 @@ resizable = true
 margin_right = 200.0
 margin_bottom = 70.0
 resizable = true
-dialog_text = "QUIT_LABEL"
+dialog_text = "Are you sure you want to exit Pixelorama?"
+
+[node name="QuitAndSaveDialog" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+window_title = "Save before exiting?"
+resizable = true
+dialog_text = "You have unsaved progress. How do you wish to proceed?"
 
 [node name="ErrorDialog" type="AcceptDialog" parent="."]
 margin_right = 76.0
@@ -1471,7 +1478,7 @@ visible = false
 [node name="NewPaletteDialog" parent="." instance=ExtResource( 52 )]
 
 [node name="PaletteImportFileDialog" parent="." instance=ExtResource( 53 )]
-filters = PoolStringArray( "*.json ; JavaScript Object Notation", "*.gpl ; Gimp Palette Library" )
+filters = PoolStringArray( "*.json ; JavaScript Object Notation", "*.gpl ; Gimp Palette Library", "*.png; Portable Network Graphics" )
 current_dir = "C:/Users/Overloaded/Dropbox/Orama Founding Members/εταιρικα αρχεια/Godot Projects/Pixelorama"
 current_path = "C:/Users/Overloaded/Dropbox/Orama Founding Members/εταιρικα αρχεια/Godot Projects/Pixelorama/"
 
@@ -1547,6 +1554,9 @@ visible = false
 [connection signal="popup_hide" from="AboutDialog" to="." method="_can_draw_true"]
 [connection signal="confirmed" from="QuitDialog" to="." method="_on_QuitDialog_confirmed"]
 [connection signal="popup_hide" from="QuitDialog" to="." method="_can_draw_true"]
+[connection signal="confirmed" from="QuitAndSaveDialog" to="." method="_on_QuitDialog_confirmed"]
+[connection signal="custom_action" from="QuitAndSaveDialog" to="." method="_on_QuitAndSaveDialog_custom_action"]
+[connection signal="popup_hide" from="QuitAndSaveDialog" to="." method="_can_draw_true"]
 [connection signal="confirmed" from="NewPaletteDialog" to="MenuAndUI/UI/LayerPanel/LayersAndMisc/VSplitContainer/PaletteVBoxContainer/ScrollPalette/CenterPalette/PaletteContainer" method="on_new_palette_confirmed"]
 [connection signal="file_selected" from="PaletteImportFileDialog" to="MenuAndUI/UI/LayerPanel/LayersAndMisc/VSplitContainer/PaletteVBoxContainer/ScrollPalette/CenterPalette/PaletteContainer" method="on_palette_import_file_selected"]
 
