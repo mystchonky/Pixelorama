@@ -16,13 +16,13 @@ var zen_mode := false
 
 @onready var ui := Global.control.find_child("DockableContainer") as DockableContainer
 @onready var ui_elements := ui.get_children()
-@onready var file_menu_button := $MenuItems/FileMenu
-@onready var edit_menu_button := $MenuItems/EditMenu
-@onready var select_menu_button := $MenuItems/SelectMenu
-@onready var image_menu_button := $MenuItems/ImageMenu
-@onready var view_menu_button := $MenuItems/ViewMenu
-@onready var window_menu_button := $MenuItems/WindowMenu
-@onready var help_menu_button := $MenuItems/HelpMenu
+@onready var file_menu_button := $Container/MenuItems/FileMenu
+@onready var edit_menu_button := $Container/MenuItems/EditMenu
+@onready var select_menu_button := $Container/MenuItems/SelectMenu
+@onready var image_menu_button := $Container/MenuItems/ImageMenu
+@onready var view_menu_button := $Container/MenuItems/ViewMenu
+@onready var window_menu_button := $Container/MenuItems/WindowMenu
+@onready var help_menu_button := $Container/MenuItems/HelpMenu
 
 @onready var greyscale_vision: ColorRect = ui.find_child("GreyscaleVision")
 @onready var new_image_dialog: ConfirmationDialog = Global.control.find_child("CreateNewImage")
