@@ -21,7 +21,9 @@ func _gui_input(event: InputEvent) -> void:
 
 # Code taken and modified from Godot's source code
 func _draw() -> void:
-	var font: Font = Global.control.theme.default_font
+	# TODO: Add types to Globals
+	var global_theme = Global.control.theme
+	var font: Font = global_theme.default_font if global_theme.has_default_font() else ThemeDB.fallback_font
 	var transform := Transform2D()
 	var ruler_transform := Transform2D()
 	var major_subdivide := Transform2D()
