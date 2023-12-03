@@ -1,4 +1,5 @@
 extends Control
+class_name Pixelorama
 
 var opensprite_file_selected := false
 var redone := false

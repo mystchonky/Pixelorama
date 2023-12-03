@@ -436,7 +436,7 @@ var cel_3d_button_node: PackedScene = load("res://src/UI/Timeline/Cel3DButton.ts
 
 @onready var main_window := get_window()  ## The main Pixelorama [Window].
 ## The control node (aka Main node). It has the [param Main.gd] script attached.
-@onready var control := get_tree().current_scene
+@onready var control : Pixelorama = get_tree().current_scene 
 
 ## The project tabs bar. It has the [param Tabs.gd] script attached.
 @onready var tabs: TabBar = control.find_child("TabBar")

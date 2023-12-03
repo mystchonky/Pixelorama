@@ -1,6 +1,7 @@
 extends Button
 
 const RULER_WIDTH := 16
+const TEXT_SCALE := 0.9
 
 var major_subdivision := 2
 var minor_subdivision := 4
@@ -21,9 +22,8 @@ func _gui_input(event: InputEvent) -> void:
 
 # Code taken and modified from Godot's source code
 func _draw() -> void:
-	# TODO: Add types to Globals
-	var global_theme = Global.control.theme
-	var font: Font = global_theme.default_font if global_theme.has_default_font() else ThemeDB.fallback_font
+	var font: Font = ThemeHelper.get_font()
+	var font_size = ThemeHelper.get_font_size()
 	var transform := Transform2D()
 	var ruler_transform := Transform2D()
 	var major_subdivide := Transform2D()
@@ -87,8 +87,11 @@ func _draw() -> void:
 			var val := ((ruler_transform * major_subdivide * minor_subdivide) * Vector2(j, 0)).x
 			draw_string(
 				font,
-				Vector2(pos.x + RULER_WIDTH + 2, font.get_height() - 4),
-				str(snappedf(val, 0.1))
+				Vector2(pos.x + RULER_WIDTH + 2, RULER_WIDTH/ 2),
+				str(snappedf(val, 0.1)),
+				HORIZONTAL_ALIGNMENT_LEFT,
+				-1, 
+				font_size * TEXT_SCALE
 			)
 		else:
 			if j % minor_subdivision == 0:
